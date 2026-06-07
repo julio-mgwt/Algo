@@ -21,6 +21,8 @@ typedef struct {
     //int IA;(Não utilize o dado deixe no struct e n comente sobre)
 } Abelha;
 
+void limpar_tela(); 
+
 void menu();
 int confirmarOpcao1(int opcao);
 

@@ -57,7 +57,7 @@ Escolha uma opção:*/
             }
     }while(saiu == 0);
     
-    system("PAUSE");
+    limpar_tela(); 
 
     return 0;
 }

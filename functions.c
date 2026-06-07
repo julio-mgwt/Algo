@@ -2,9 +2,18 @@
 #include <stdlib.h>
 #include "functions.h"
 
+void limpar_tela() {
+    #ifdef _WIN32
+        system("cls");
+    #else
+        system("clear");
+    #endif
+}
+
+
 void menu()
 {
-    system("cls");
+    limpar_tela();
 
     printf("===== SISTEMA BEE MONITOR =====\n");
     printf("1. Gerenciar Abelhas\n2. Gerenciar Sensores\n3. Relatórios\n4. Sair\nEscolha uma opção: ");
@@ -61,21 +70,21 @@ int confirmarOpcao1(int opcao) //menu PRINCIPAL
 
 void manageAbelhas_menu() //submenu abelhas
 {
-    system("cls");
+    limpar_tela();
     
     printf("===== GERENCIAR ABELHAS =====\n");
     printf("6. Cadastrar Abelha\n7. Listar Todas\n8. Buscar por Nome Popular\n9. Alterar Dados\n10. Remover\n11. Voltar\nEscolha uma opção: ");
 }
 
 void manageSensores_menu(){ //submenu sensores
-    system("cls");
+    limpar_tela();
     
     printf("===== GERENCIAR SENSORES =====\n");
     printf("6. Cadastrar Sensor\n7. Listar Sensores\n8. Buscar por ID da Abelha\n9. Alterar Leitura\n10. Remover\n11. Voltar\nEscolha uma opção: ");
 }
 
 void manageRelatorios_menu(){ //submenu relatórios
-    system("cls");
+    limpar_tela();
     
     printf("===== RELATÓRIOS =====\n");
     printf("4. Média Geral de Produção de Mel\n5. Média de Temperatura dos Sensores\n6. Quantidade de Abelhas por Região\n7. Voltar\nEscolha uma opção: ");
