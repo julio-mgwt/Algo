@@ -1,0 +1,11 @@
+Trabalho: Sistema para “BeeRoute Tracker”
+
+Integrantes: Júlio, Kauany Sá
+Disciplina: Algoritmos e Programação I
+Professora: Dra. Alcilene Dalília de Sousa
+Descrição: Sistema de cadastro e monitoramento de abelhas sem ferrão,
+sensores ambientais associados e BeeRoute.
+Compilação: gcc ffunctions.c main.c -o BeeRouteTracker
+Execução: ./BeeRouteTracker.exe
+Bugs conhecidos: ainda não há persistência em arquivo; os dados se perdem
+ao encerrar o programa.
