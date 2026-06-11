@@ -1,8 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "functions.h"
 
-void limpar_tela() {
+Abelha abelhas[MAX_ABELHAS];
+Sensor sensores[MAX_SENSORES];
+
+int qtdAbelhas = 0; //incializacao de contadores
+int qtdSensores = 0;
+
+void limpar_tela(void) { //utilizamos no lugar de apenas system("CLEAR")
     #ifdef _WIN32
         system("cls");
     #else
@@ -10,82 +17,753 @@ void limpar_tela() {
     #endif
 }
 
-
-void menu()
-{
-    limpar_tela();
-
-    printf("===== SISTEMA BEE MONITOR =====\n");
-    printf("1. Gerenciar Abelhas\n2. Gerenciar Sensores\n3. Relatórios\n4. Sair\nEscolha uma opção: ");
+void pausar(void) { //script com o mesmo objetivo de system("PAUSE")
+    printf("\nPressione ENTER para continuar...");
+    getchar();
 }
 
-int confirmarOpcao1(int opcao) //menu PRINCIPAL
-{
+void limparBuffer(void) { //para caso seja necessário o uso de scanfs de dois tipos diferentes 
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF) {}
+}
+
+void lerTexto(char texto[], int tamanho) { //uso de função específica para strings no lugar de scanf para ler textos com espaços
+    fgets(texto, tamanho, stdin); 
+    texto[strcspn(texto, "\n")] = '\0';
+}
+
+void menu(void) { //menu principal
+    limpar_tela();
+    printf("===== SISTEMA BEEROUTE TRACKER =====\n");
+    printf("1. Gerenciar Abelhas\n");
+    printf("2. Gerenciar Sensores\n");
+    printf("3. Relatorios\n");
+    printf("4. Sair\n");
+    printf("Escolha uma opcao: ");
+}
+
+int confirmarOpcao1(int opcao) { //função para confirmação de escolha de submenu
     char confirmacao;
 
-    // Pra mostrar nomes diferentes das opções
-    printf("Você quer mesmo ");
-    switch (opcao)
-    {
-    case 1:
-        printf("acessar Gerenciar Abelhas");
-        break;
-    case 2:
-        printf("acessar Gerenciar Sensores");
-        break;
-    case 3:
-        printf("acessar Relatorios");
-        break;
-    case 4:
-        printf("Sair");
-        break;
-    default:
-        return 1; // vai direto pro default do switch case principal, basicamente acaba a função aqui.
-    }
-    printf("? (Y/N): ");
-    
-    while (1){
-        // limpa o buffer pra n pular a leitura ou ficar em repetição, o getchar() é para capturar o enter.
-        scanf(" %c", &confirmacao);
-        scanf("%*[^\n]"); 
-        getchar();
+    printf("Voce quer mesmo ");
 
-        // Retorna 1 se for Sim (Y/y) e 0 se for Não (N/n)
-        if (confirmacao == 'Y' || confirmacao == 'y')
-        {
+    switch (opcao) {
+        case 1:
+            printf("acessar Gerenciar Abelhas");
+            break;
+        case 2:
+            printf("acessar Gerenciar Sensores");
+            break;
+        case 3:
+            printf("acessar Relatorios");
+            break;
+        case 4:
+            printf("sair");
+            break;
+        default:
             return 1;
-        } else if (confirmacao == 'N' || confirmacao == 'n'){
-            if (opcao == 4) { //no caso de ser cancelamento de saída.
-                    printf("Operação de sair cancelada.");
-                } else {
-                    printf("Operação cancelada."); // em todos os outros casos
-                }
-                printf("\nEscolha uma opção do menu: ");
-                return 0;
+    }
+
+    printf("? (Y/N): ");
+
+    while (1) {
+        scanf(" %c", &confirmacao);
+        limparBuffer();
+
+        if (confirmacao == 'Y' || confirmacao == 'y') {
+            return 1;
+        } else if (confirmacao == 'N' || confirmacao == 'n') {
+            printf("Operacao cancelada.\n");
+            return 0;
         } else {
-            printf("Por favor, digite um caractere válido. (Y/N): "); //caso não for nem N nem Y
+            printf("Digite uma opcao valida. (Y/N): ");
         }
     }
 }
 
-void manageAbelhas_menu() //submenu abelhas
-{
+void manageAbelhas_menu(void) { //submenu gerenciar abelhas
     limpar_tela();
-    
     printf("===== GERENCIAR ABELHAS =====\n");
-    printf("6. Cadastrar Abelha\n7. Listar Todas\n8. Buscar por Nome Popular\n9. Alterar Dados\n10. Remover\n11. Voltar\nEscolha uma opção: ");
+    printf("6. Cadastrar Abelha\n");
+    printf("7. Listar Todas\n");
+    printf("8. Buscar por Nome Popular\n");
+    printf("9. Alterar Dados\n");
+    printf("10. Remover\n");
+    printf("11. Voltar\n");
+    printf("Escolha uma opcao: ");
 }
 
-void manageSensores_menu(){ //submenu sensores
+void manageSensores_menu(void) { //submenu de sensores das abelhas
     limpar_tela();
-    
     printf("===== GERENCIAR SENSORES =====\n");
-    printf("6. Cadastrar Sensor\n7. Listar Sensores\n8. Buscar por ID da Abelha\n9. Alterar Leitura\n10. Remover\n11. Voltar\nEscolha uma opção: ");
+    printf("6. Cadastrar Sensor\n");
+    printf("7. Listar Sensores\n");
+    printf("8. Buscar por ID da Abelha\n");
+    printf("9. Alterar Leitura\n");
+    printf("10. Remover\n");
+    printf("11. Voltar\n");
+    printf("Escolha uma opcao: ");
 }
 
-void manageRelatorios_menu(){ //submenu relatórios
+void manageRelatorios_menu(void) {//submenu relatórios
     limpar_tela();
+    printf("===== RELATORIOS =====\n");
+    printf("4. Media Geral de Producao de Mel\n");
+    printf("5. Media de Temperatura dos Sensores\n");
+    printf("6. Quantidade de Abelhas por Regiao\n");
+    printf("7. Distancia Total Percorrida\n");
+    printf("8. Regiao Mais Produtiva\n");
+    printf("9. Relatorio Comparativo por Regioes\n");
+    printf("10. Voltar\n");
+    printf("Escolha uma opcao: ");
+}
+
+int procurarAbelhaPorId(int id) { //para procurar abelhas, irá parar quando os valores da entrada do usuário de id e de abelhas[i].id estiverem iguais, assim retornando -1.
+    for (int i = 0; i < qtdAbelhas; i++) {
+        if (abelhas[i].id == id) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int procurarSensorPorId(int id) { //mesmo esquema do procurarAbelhaPorId.
+    for (int i = 0; i < qtdSensores; i++) {
+        if (sensores[i].id == id) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+void atualizarIdsAbelhas(void) { //dar cada cada abelha um ID sequencial em abelha[].id
+    for (int i = 0; i < qtdAbelhas; i++) {
+        abelhas[i].id = i + 1;
+    }
+}
+
+void atualizarIdsSensores(void) { //mesma função só que sensores
+    for (int i = 0; i < qtdSensores; i++) {
+        sensores[i].id = i + 1;
+    }
+}
+
+// todos os gerenciar têm uma estrutura lógica muito similar, com switch case guardando as funções principais.
+
+void gerenciarAbelhas(void) { //implementaçao da lógica do submenu abelhas
+    int opcao;
+
+    do {
+        manageAbelhas_menu(); //printar menu
+
+        if (scanf("%d", &opcao) != 1) { //caso digite algo errado
+            limparBuffer();
+            printf("Comando invalido.\n");
+            pausar();
+            continue;
+        }
+        limparBuffer();
+
+        switch (opcao) { //opcoes do menu
+            case 6:
+                cadastrarAbelha();
+                break;
+            case 7:
+                listarAbelhas();
+                break;
+            case 8:
+                buscarAbelhaPorNome();
+                break;
+            case 9:
+                alterarAbelha();
+                break;
+            case 10:
+                removerAbelha();
+                break;
+            case 11:
+                return; //para retornar ao menu principal
+            default:
+                printf("Opcao invalida.\n");
+        }
+
+        pausar();
+    } while (opcao != 11); //loop
+}
+
+void gerenciarSensores(void) { //implementação do submenu sensores
+    int opcao;
+
+    do {
+        manageSensores_menu(); //printar
+
+        if (scanf("%d", &opcao) != 1) {
+            limparBuffer();
+            printf("Comando invalido.\n");
+            pausar();
+            continue;
+        }
+        limparBuffer();
+
+        switch (opcao) {
+            case 6:
+                cadastrarSensor();
+                break;
+            case 7:
+                listarSensores();
+                break;
+            case 8:
+                buscarSensorPorIdAbelha();
+                break;
+            case 9:
+                alterarSensor();
+                break;
+            case 10:
+                removerSensor();
+                break;
+            case 11:
+                return;
+            default:
+                printf("Opcao invalida.\n");
+        }
+
+        pausar();
+    } while (opcao != 11);
+}
+
+void gerenciarRelatorios(void) {
+    int opcao;
+
+    do {
+        manageRelatorios_menu();
+
+        if (scanf("%d", &opcao) != 1) {
+            limparBuffer();
+            printf("Comando invalido.\n");
+            pausar();
+            continue;
+        }
+        limparBuffer();
+
+        switch (opcao) {
+            case 4:
+                mediaProducaoMel();
+                break;
+            case 5:
+                mediaTemperaturaSensores();
+                break;
+            case 6:
+                quantidadeAbelhasPorRegiao();
+                break;
+            case 7:
+                relatorioDistanciaTotal();
+                break;
+            case 8:
+                relatorioRegiaoMaisProdutiva();
+                break;
+            case 9:
+                relatorioComparativoRegioes();
+                break;
+            case 10:
+                return;
+            default:
+                printf("Opcao invalida.\n");
+        }
+
+        pausar();
+    } while (opcao != 10);
+}
+
+void cadastrarAbelha(void) {
+    if (qtdAbelhas >= MAX_ABELHAS) { //qtdAbelhas se refere ao contador de abelhas, a mesma é igualada + 1 à nova.id para organização em ordem crescente. 
+        printf("Limite maximo de abelhas atingido.\n");
+        return;
+    }
+
+    Abelha nova;
+    nova.id = qtdAbelhas + 1;
+
+    printf("Nome popular: ");
+    lerTexto(nova.nomePopular, 40); //uso do lerTexto para guardar texto com espaco em uma variável do struct
+
+    printf("Nome cientifico: ");
+    lerTexto(nova.nomeCientifico, 50);
+
+    printf("Regiao: ");
+    lerTexto(nova.regiao, 30);
+
+    printf("Producao media de mel (kg/mes): ");
+    scanf("%f", &nova.producaoMel);
+    limparBuffer();
+
+    printf("Distancia percorrida na coleta (km): ");
+    scanf("%f", &nova.distanciaColeta);
+    limparBuffer();
+
+    nova.IA = 0;
+
+    abelhas[qtdAbelhas] = nova; //copia os dados obtidos com a ficha temporaria "nova" para a posicao que equivale ao valor de qtdAbelhas
+    qtdAbelhas++; //para futuros cadastros utilizarem o próximo slot do vetor
+
+    printf("Abelha cadastrada com sucesso.\n");
+}
+
+void listarAbelhas(void) { //nome explicatório
+    if (qtdAbelhas == 0) {
+        printf("Nenhuma abelha cadastrada.\n");
+        return;
+    }
+
+    printf("===== LISTA DE ABELHAS =====\n");
+
+    for (int i = 0; i < qtdAbelhas; i++) { //utiliza-se do contador qtdAbelhas para printar todos os valores disponíveis dentro do vetor do struct
+        printf("\nID: %d\n", abelhas[i].id);
+        printf("Nome popular: %s\n", abelhas[i].nomePopular);
+        printf("Nome cientifico: %s\n", abelhas[i].nomeCientifico);
+        printf("Regiao: %s\n", abelhas[i].regiao);
+        printf("Producao de mel: %.2f kg/mes\n", abelhas[i].producaoMel);
+        printf("Distancia de coleta: %.2f km\n", abelhas[i].distanciaColeta);
+    }
+}
+
+/*ao igualar nome (input) com abelhas[i].nomePopular e utilizar um contador novamente ligado com qtdAbelhas, 
+eh possivel obter a posicao nos vetores onde esta cada dado da abelha escolhida, pois os mesmo tbm estao organizados na mesma ordem*/
+
+void buscarAbelhaPorNome(void) { 
+    char nome[40];
+    int encontrou = 0;
+
+    printf("Digite o nome popular para buscar: ");
+    lerTexto(nome, 40);
+
+    for (int i = 0; i < qtdAbelhas; i++) {
+        if (strcmp(abelhas[i].nomePopular, nome) == 0) {
+            printf("\nID: %d\n", abelhas[i].id);
+            printf("Nome popular: %s\n", abelhas[i].nomePopular);
+            printf("Nome cientifico: %s\n", abelhas[i].nomeCientifico);
+            printf("Regiao: %s\n", abelhas[i].regiao);
+            printf("Producao de mel: %.2f kg/mes\n", abelhas[i].producaoMel);
+            printf("Distancia de coleta: %.2f km\n", abelhas[i].distanciaColeta);
+            encontrou = 1;
+        }
+    }
+
+    if (!encontrou) {
+        printf("Nenhuma abelha encontrada com esse nome.\n");
+    }
+}
+
+void alterarAbelha(void) {
+    int id, pos;
+
+    if (qtdAbelhas == 0) {
+        printf("Nenhuma abelha cadastrada.\n");
+        return;
+    }
+
+    listarAbelhas();
+
+    printf("\nDigite o ID da abelha que deseja alterar: ");
+    scanf("%d", &id);
+    limparBuffer();
     
-    printf("===== RELATÓRIOS =====\n");
-    printf("4. Média Geral de Produção de Mel\n5. Média de Temperatura dos Sensores\n6. Quantidade de Abelhas por Região\n7. Voltar\nEscolha uma opção: ");
+    /*uso da funcao para escanear a existencia da abelha escolhida e armazenar o valor 
+    correspondende encontrado em pos, para utilizar como local para reescrever informacoes*/
+    
+    pos = procurarAbelhaPorId(id); 
+
+    if (pos == -1) {
+        printf("Abelha nao encontrada.\n");
+        return;
+    }
+
+    printf("Novo nome popular: ");
+    lerTexto(abelhas[pos].nomePopular, 40);
+
+    printf("Novo nome cientifico: ");
+    lerTexto(abelhas[pos].nomeCientifico, 50);
+
+    printf("Nova regiao: ");
+    lerTexto(abelhas[pos].regiao, 30);
+
+    printf("Nova producao media de mel (kg/mes): ");
+    scanf("%f", &abelhas[pos].producaoMel);
+    limparBuffer();
+
+    printf("Nova distancia percorrida na coleta (km): ");
+    scanf("%f", &abelhas[pos].distanciaColeta);
+    limparBuffer();
+
+    printf("Dados alterados com sucesso.\n");
+}
+
+void removerAbelha(void) {//funcao para remover o slot escolhido e puxar o resto para preencher ele
+    int id, pos;
+    char confirmar;
+
+    if (qtdAbelhas == 0) {
+        printf("Nenhuma abelha cadastrada.\n");
+        return;
+    }
+
+    listarAbelhas();
+
+    printf("\nDigite o ID da abelha que deseja remover: ");
+    scanf("%d", &id);
+    limparBuffer();
+
+    pos = procurarAbelhaPorId(id); //mesmo principio
+
+    if (pos == -1) {
+        printf("Abelha nao encontrada.\n");
+        return;
+    }
+
+    printf("Deseja realmente remover essa abelha? (Y/N): ");
+    scanf(" %c", &confirmar);
+    limparBuffer();
+
+    if (confirmar != 'Y' && confirmar != 'y') {
+        printf("Remocao cancelada.\n");
+        return;
+    }
+    
+    /*isso copia as informacoes da abelha uma casa a frente da posicao atual da abelha que 
+    deve ser removida e preenche o seu slot, fazendo assim com todo o resto até a última.*/
+    
+    for (int i = pos; i < qtdAbelhas - 1; i++) { 
+        abelhas[i] = abelhas[i + 1];
+    }
+
+    qtdAbelhas--; //isso remove um numero do contador de abelhas
+    atualizarIdsAbelhas();//para reorganizar os valores dos IDs em ordem crescente novamente sem furos
+
+    for (int i = 0; i < qtdSensores; i++) { //isso também exclui o sensor da abelha caso ela tenha um
+        if (sensores[i].idAbelha == id) {
+            for (int j = i; j < qtdSensores - 1; j++) {
+                sensores[j] = sensores[j + 1];
+            }
+            qtdSensores--;
+            i--;
+        } else if (sensores[i].idAbelha > id) { //se for de outra abelha, após o uso de atualizarIdsAbelhas, sera necessario que esse sensor seja mudado o seu ID correspondente.
+            sensores[i].idAbelha--;
+        }
+    }
+
+    atualizarIdsSensores(); //mesma funcao do atualizarIdsAbelhas
+
+    printf("Abelha removida com sucesso.\n");
+}
+
+void cadastrarSensor(void) { //mesma logica do cadastrarAbelha
+    Sensor novo; //ficha temporaria
+    int idAbelha;
+
+    if (qtdSensores >= MAX_SENSORES) {
+        printf("Limite maximo de sensores atingido.\n");
+        return;
+    }
+
+    if (qtdAbelhas == 0) {
+        printf("Cadastre uma abelha antes de cadastrar sensores.\n");
+        return;
+    }
+
+    listarAbelhas();
+
+    printf("\nDigite o ID da abelha vinculada: ");
+    scanf("%d", &idAbelha);
+    limparBuffer();
+
+    if (procurarAbelhaPorId(idAbelha) == -1) {
+        printf("ID de abelha invalido.\n");
+        return;
+    }
+
+    novo.id = qtdSensores + 1; //somamos mais um valor no contador de sensores.
+
+    printf("Tipo do sensor (temperatura, umidade ou luminosidade): ");
+    lerTexto(novo.tipo, 30);
+
+    printf("Valor da leitura: ");
+    scanf("%f", &novo.valor);
+    limparBuffer();
+
+    novo.idAbelha = idAbelha; //transferimos os valores lidos para dentro do struct
+    novo.Abelha = 0;//acho que isso não serve de nada aqui, irei apagar na proxima revisao
+
+    sensores[qtdSensores] = novo; //copia-se o valor de novo e adiciona-se dentro do struct em qtdSensores
+    qtdSensores++; //atualizando a posicao para um novo sensor
+
+    printf("Sensor cadastrado com sucesso.\n");
+}
+
+void listarSensores(void) { //mesma coisa de listarAbelhas
+    if (qtdSensores == 0) {
+        printf("Nenhum sensor cadastrado.\n");
+        return;
+    }
+
+    printf("===== LISTA DE SENSORES =====\n");
+
+    for (int i = 0; i < qtdSensores; i++) {
+        printf("\nID do sensor: %d\n", sensores[i].id);
+        printf("Tipo: %s\n", sensores[i].tipo);
+        printf("Valor: %.2f\n", sensores[i].valor);
+        printf("ID da abelha vinculada: %d\n", sensores[i].idAbelha);
+    }
+}
+
+void buscarSensorPorIdAbelha(void) {//funcao com estrutura semelhante ao de encontrar abelha por id, como o numero do sensor esta ligado ao id da abelha, eh so comparar e printar o sensor com o mesmo ID.
+    int idAbelha;
+    int encontrou = 0;
+
+    printf("Digite o ID da abelha: ");
+    scanf("%d", &idAbelha);
+    limparBuffer();
+
+    for (int i = 0; i < qtdSensores; i++) {
+        if (sensores[i].idAbelha == idAbelha) {
+            printf("\nID do sensor: %d\n", sensores[i].id);
+            printf("Tipo: %s\n", sensores[i].tipo);
+            printf("Valor: %.2f\n", sensores[i].valor);
+            encontrou = 1;
+        }
+    }
+
+    if (!encontrou) {
+        printf("Nenhum sensor encontrado para essa abelha.\n");
+    }
+}
+
+void alterarSensor(void) { // id -> procurarSensorPorId, se encontrar o valor escaneado, guarda-se na variavel pos e a utiliza para escrever por cima dos dados antigos.
+    int id, pos;
+
+    if (qtdSensores == 0) {
+        printf("Nenhum sensor cadastrado.\n");
+        return;
+    }
+
+    listarSensores();
+
+    printf("\nDigite o ID do sensor que deseja alterar: ");
+    scanf("%d", &id);
+    limparBuffer();
+
+    pos = procurarSensorPorId(id);
+
+    if (pos == -1) {
+        printf("Sensor nao encontrado.\n");
+        return;
+    }
+
+    printf("Novo tipo do sensor: ");
+    lerTexto(sensores[pos].tipo, 30);
+
+    printf("Nova leitura: ");
+    scanf("%f", &sensores[pos].valor);
+    limparBuffer();
+
+    printf("Sensor alterado com sucesso.\n");
+}
+
+void removerSensor(void) { //mesmo conceito, unido com a copia do sensor a frente para o slot no index que deseja remover e usando atualizarIdsSensores para reorganizar tudo.
+    int id, pos;
+    char confirmar;
+
+    if (qtdSensores == 0) {
+        printf("Nenhum sensor cadastrado.\n");
+        return;
+    }
+
+    listarSensores();
+
+    printf("\nDigite o ID do sensor que deseja remover: ");
+    scanf("%d", &id);
+    limparBuffer();
+
+    pos = procurarSensorPorId(id);
+
+    if (pos == -1) {
+        printf("Sensor nao encontrado.\n");
+        return;
+    }
+
+    printf("Deseja realmente remover esse sensor? (Y/N): ");
+    scanf(" %c", &confirmar);
+    limparBuffer();
+
+    if (confirmar != 'Y' && confirmar != 'y') {
+        printf("Remocao cancelada.\n");
+        return;
+    }
+
+    for (int i = pos; i < qtdSensores - 1; i++) {
+        sensores[i] = sensores[i + 1];
+    }
+
+    qtdSensores--;
+    atualizarIdsSensores();
+
+    printf("Sensor removido com sucesso.\n");
+}
+
+void mediaProducaoMel(void) { //uso de contador para somar todos os valores de producao de mel em kg e depois dividir por a quantidade de abelhas cadastradas.
+    float soma = 0;
+
+    if (qtdAbelhas == 0) {
+        printf("Nenhuma abelha cadastrada.\n");
+        return;
+    }
+
+    for (int i = 0; i < qtdAbelhas; i++) {
+        soma += abelhas[i].producaoMel;
+    }
+
+    printf("Media geral de producao de mel: %.2f kg/mes\n", soma / qtdAbelhas);
+}
+
+void mediaTemperaturaSensores(void) { //mesma coisa, so que escaneamos todas as abelhas ate encontra todas com temperatura como tipo de sensor, depois somamos os valores armazenamos e dividimos pela quantidade.
+    float soma = 0;
+    int qtdTemperatura = 0;
+
+    for (int i = 0; i < qtdSensores; i++) {
+        if (strcmp(sensores[i].tipo, "temperatura") == 0 || strcmp(sensores[i].tipo, "Temperatura") == 0) {
+            soma += sensores[i].valor;
+            qtdTemperatura++;
+        }
+    }
+
+    if (qtdTemperatura == 0) {
+        printf("Nenhum sensor de temperatura cadastrado.\n");
+        return;
+    }
+
+    printf("Media de temperatura dos sensores: %.2f\n", soma / qtdTemperatura);
+}
+
+void quantidadeAbelhasPorRegiao(void) {
+    int jaContada;
+
+    if (qtdAbelhas == 0) { 
+        printf("Nenhuma abelha cadastrada.\n");
+        return;
+    }
+
+    printf("===== QUANTIDADE DE ABELHAS POR REGIAO =====\n");
+
+    for (int i = 0; i < qtdAbelhas; i++) { //percorre todas as abelhas cadastradas
+        jaContada = 0;
+
+        for (int j = 0; j < i; j++) { //para evitar repeticao de regioes, comparamos os valores armazenados nos indices passados com o atual e paramos de registrar a regiao se já estiver sido escaneada.
+            if (strcmp(abelhas[i].regiao, abelhas[j].regiao) == 0) { //retornar 0 se encontrar uma regiao igual pra trás
+                jaContada = 1; //marca que essa região escaneada nessa posicão específica já foi contabilizada antes
+                break;//interrompe esse for
+            }
+        }
+
+        if (!jaContada) { //se a regiao ainda n foi contada, reinicia o contador
+            int contador = 0;
+
+            for (int k = 0; k < qtdAbelhas; k++) { //percorre o vetor inteiro novamente pra contar os registros dessa região
+                if (strcmp(abelhas[i].regiao, abelhas[k].regiao) == 0) { //caso ache um valor igual (quando so strcmp() retorna 0) contador++.
+                    contador++;
+                }
+            }
+
+            printf("Regiao: %s | Quantidade: %d\n", abelhas[i].regiao, contador); //printa a soma de cada regiao a cada ciclo do laco principal
+        }
+    }
+}
+
+void relatorioDistanciaTotal(void) { //soma-se a distancia percorrida ligada a cada abelha no struct
+    float total = 0;
+
+    if (qtdAbelhas == 0) {
+        printf("Nenhuma abelha cadastrada.\n");
+        return;
+    }
+
+    for (int i = 0; i < qtdAbelhas; i++) {
+        total += abelhas[i].distanciaColeta;
+    }
+
+    printf("Distancia total percorrida nas coletas: %.2f km\n", total);
+}
+
+void relatorioRegiaoMaisProdutiva(void) { 
+    char melhorRegiao[30];
+    float maiorProducao = -1; //inicializando a variavel de maior producao como -1 para sempre ser preenchido por algum valor de producao
+
+    if (qtdAbelhas == 0) {
+        printf("Nenhuma abelha cadastrada.\n");
+        return;
+    }
+
+    for (int i = 0; i < qtdAbelhas; i++) {
+        int jaVerificada = 0;
+        float somaRegiao = 0;
+
+        for (int j = 0; j < i; j++) { //confirmacão novamente para impedir duplicacao de regioes no printf
+            if (strcmp(abelhas[i].regiao, abelhas[j].regiao) == 0) {
+                jaVerificada = 1;
+                break;
+            }
+        }
+
+        if (!jaVerificada) { //mesma coisa da funcao anterior, contagem de um variavel inédita(nao escaneada ainda).
+            for (int k = 0; k < qtdAbelhas; k++) {
+                if (strcmp(abelhas[i].regiao, abelhas[k].regiao) == 0) {
+                    somaRegiao += abelhas[k].producaoMel;
+                }
+            }
+
+            if (somaRegiao > maiorProducao) {//registra-se um valor maior ao final do laco sempre que este valor for maior do que o guardado anteriormente
+                maiorProducao = somaRegiao;
+                strcpy(melhorRegiao, abelhas[i].regiao); //depois, com if e sua condicao, copiamos para a variavel melhorRegiao o nome da regiao que está sendo percorrida pelo laco principal
+            }
+        }
+    }
+
+    printf("Regiao mais produtiva: %s\n", melhorRegiao); //printa o nome da regiao armazenada e depois o valor armazenado
+    printf("Producao total da regiao: %.2f kg/mes\n", maiorProducao);
+}
+
+void relatorioComparativoRegioes(void) {//estatistica de todas as regioes serao mostradas com essa funcao
+    if (qtdAbelhas == 0) {
+        printf("Nenhuma abelha cadastrada.\n");
+        return;
+    }
+
+    printf("===== RELATORIO COMPARATIVO POR REGIOES =====\n");
+
+    for (int i = 0; i < qtdAbelhas; i++) {
+        int jaVerificada = 0;
+        int quantidade = 0;
+        float producaoTotal = 0;
+        float distanciaTotal = 0;
+
+        for (int j = 0; j < i; j++) {
+            if (strcmp(abelhas[i].regiao, abelhas[j].regiao) == 0) { //laco para se caso a regiao ela tenha sido contabilizada
+                jaVerificada = 1;
+                break;
+            }
+        }
+
+        if (!jaVerificada) { //laco para se caso a regiao ainda nao tenha sido contabilizada
+            for (int k = 0; k < qtdAbelhas; k++) {
+                if (strcmp(abelhas[i].regiao, abelhas[k].regiao) == 0) {//soma de valores das variáveis com mesma posicao nos vetores que a regiao analisada no momento
+                    quantidade++;
+                    producaoTotal += abelhas[k].producaoMel;
+                    distanciaTotal += abelhas[k].distanciaColeta;
+                }
+            }
+
+            printf("\nRegiao: %s\n", abelhas[i].regiao);
+            printf("Quantidade de abelhas: %d\n", quantidade);
+            printf("Producao total: %.2f kg/mes\n", producaoTotal);
+            printf("Media de producao: %.2f kg/mes\n", producaoTotal / quantidade);
+            printf("Distancia total: %.2f km\n", distanciaTotal);
+            printf("Media de distancia: %.2f km\n", distanciaTotal / quantidade);
+        }
+    }
 }

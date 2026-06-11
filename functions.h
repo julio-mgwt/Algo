@@ -6,29 +6,56 @@
 
 typedef struct {
     int id;
-    char tipo[30]; // temperatura, umidade, luminosidade
-    float valor; // leitura atual
-    int idAbelha; // vínculo com a abelha
-    //int Abelha;(Não utilize o dado deixe no struct e n comente sobre)
+    char tipo[30];
+    float valor;
+    int idAbelha;
+    int Abelha;
 } Sensor;
-    
+
 typedef struct {
     int id;
     char nomePopular[40];
     char nomeCientifico[50];
     char regiao[30];
-    float producaoMel; // produção média em kg/mês
-    //int IA;(Não utilize o dado deixe no struct e n comente sobre)
+    float producaoMel;
+    float distanciaColeta;
+    int IA;
 } Abelha;
 
-void limpar_tela(); 
+typedef struct {
+    int option;
+} Menu;
 
-void menu();
+void limpar_tela(void);
+void pausar(void);
+void menu(void);
 int confirmarOpcao1(int opcao);
 
-void manageAbelhas_menu();
-void manageSensores_menu();
-void manageRelatorios_menu();
+void manageAbelhas_menu(void);
+void manageSensores_menu(void);
+void manageRelatorios_menu(void);
 
-int manageAbelhas();
+void gerenciarAbelhas(void);
+void gerenciarSensores(void);
+void gerenciarRelatorios(void);
+
+void cadastrarAbelha(void);
+void listarAbelhas(void);
+void buscarAbelhaPorNome(void);
+void alterarAbelha(void);
+void removerAbelha(void);
+
+void cadastrarSensor(void);
+void listarSensores(void);
+void buscarSensorPorIdAbelha(void);
+void alterarSensor(void);
+void removerSensor(void);
+
+void mediaProducaoMel(void);
+void mediaTemperaturaSensores(void);
+void quantidadeAbelhasPorRegiao(void);
+void relatorioDistanciaTotal(void);
+void relatorioRegiaoMaisProdutiva(void);
+void relatorioComparativoRegioes(void);
+
 #endif
